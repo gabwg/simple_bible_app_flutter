@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sba/constants.dart';
 import 'package:sba/historypage.dart';
+import 'package:sba/loaddata/load_data.dart';
 import 'package:sba/readerpage.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,11 +15,6 @@ void main() {
 
 Future<String> loadAsset() async {
   return await rootBundle.loadString('assets/test.html');
-}
-
-Future<String> loadBgAsset(bookIndex, chapter, version) async {
-  return await rootBundle.loadString(
-      'assets/bg_data/$version/${booknamesEn[bookIndex]}$chapter.html');
 }
 
 class MyApp extends StatefulWidget {
@@ -35,6 +31,7 @@ class ReaderState extends ChangeNotifier {
   var chapter = 1;
   var version = defaultVersion;
   var htmlstring = "";
+  var scale = defaultScale;
   List<HistoryItem> history = [];
 
   void setBookIndexChapter(newBookIndex, newChapter) {
@@ -43,7 +40,7 @@ class ReaderState extends ChangeNotifier {
   }
 
   void setBookIndexChapterNoHistory(newBookIndex, newChapter) {
-    loadBgAsset(newBookIndex, newChapter, version)
+    loadDataAsset(newBookIndex, newChapter, version)
         .then(
           (value) => htmlstring = value,
         )
@@ -107,7 +104,7 @@ class ReaderState extends ChangeNotifier {
 
   void setVersion(newVersion) async {
     version = newVersion;
-    loadBgAsset(bookIndex, chapter, newVersion)
+    loadDataAsset(bookIndex, chapter, newVersion)
         .then(
           (value) => htmlstring = value,
         )
@@ -115,10 +112,26 @@ class ReaderState extends ChangeNotifier {
         .then((_) => {notifyListeners()});
   }
 
+  Future<void> loadScale() async {
+    final prefs = await SharedPreferences.getInstance();
+    scale = prefs.getDouble(scaleKey) ?? defaultScale;
+  }
+
+  Future<void> saveScale() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setDouble(scaleKey, scale);
+  }
+
+  void setScale(newScale) async {
+    scale = newScale;
+    saveScale();
+  }
+
   ReaderState() {
     _loadBookIndexChapter();
     loadFromHistory().then((_) => notifyListeners());
     loadVersion();
+    loadScale();
   }
 }
 

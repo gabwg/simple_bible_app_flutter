@@ -1,26 +1,37 @@
 // for shared prefs
+import 'package:flutter/widgets.dart';
 import 'package:sba/historypage.dart';
 
 const bookIndexKey = 'bookIndex';
 const chapterKey = 'chapter';
 const versionKey = 'version';
 const historyKey = 'history';
+const scaleKey = 'scale';
 
 const defaultBookIndex = 0;
 const defaultChapter = 1;
 const defaultVersion = "NIV";
+const defaultScale = 1.05;
 const List<HistoryItem> defaultHistory = [];
 
 const historyStringDelimChar = '-';
 const historyMaxLength = 20;
 
 const versionList = ["ESV", "NIV"];
+const BG_versionList = ["ESV", "NIV"];
 
 const chapterGridmaxCrossAxisExtent = 70.0;
 
 String booknameEn(int bookIndex) {
   return booknamesEn[bookIndex];
 }
+
+// default font sizes in em
+const defaultReaderHtmlFontSizes = {
+  'chapternum_font-size': 2.0,
+  'text_font-size': 1.0,
+  'sub_font-size': 0.75
+};
 
 final booknamesEn = [
   'Genesis',

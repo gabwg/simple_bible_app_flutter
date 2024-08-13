@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
 import 'package:sba/constants.dart';
-import 'package:sba/debug.dart';
 import 'package:sba/main.dart';
+import 'package:sba/reader/readerhtml.dart';
 
 ButtonStyle selectorButtonStyle(context) {
   return ButtonStyle(backgroundColor:
@@ -12,6 +11,7 @@ ButtonStyle selectorButtonStyle(context) {
     if (states.contains(WidgetState.pressed)) {
       return Theme.of(context).colorScheme.primary.withOpacity(0.5);
     }
+    return null;
   }));
 }
 
@@ -109,25 +109,15 @@ class ChapterSelector extends StatelessWidget {
   }
 }
 
-class ReaderHTML extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<ReaderState>(builder: (consumer, state, child) {
-      return HtmlWidget(state.htmlstring, renderMode: RenderMode.listView);
-    }
-        //return Placeholder()
-        );
-  }
-}
-
 class ReaderList extends StatelessWidget {
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return ListView(
           children: [
             for (var string in List<String>.generate(
-                40, (i) => "the quick brown fox jumps over the lazy dog ${i} "))
+                40, (i) => "the quick brown fox jumps over the lazy dog $i "))
               Row(
                 children: [
                   SizedBox(
