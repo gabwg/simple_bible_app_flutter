@@ -11,7 +11,11 @@ const scaleKey = 'scale';
 const defaultBookIndex = 0;
 const defaultChapter = 1;
 const defaultVersion = "NIV";
-const defaultScale = 1.05;
+const defaultScale = 1.0;
+const defaultTextSize = 12.0;
+const scaleLowerBound = 1.0;
+const scaleUpperBound = 4.0;
+const scaleIncrement = 0.25;
 const List<HistoryItem> defaultHistory = [];
 
 const historyStringDelimChar = '-';

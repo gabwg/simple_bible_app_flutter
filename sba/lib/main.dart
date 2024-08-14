@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:sba/constants.dart';
 import 'package:sba/historypage.dart';
 import 'package:sba/loaddata/load_data.dart';
@@ -125,6 +126,22 @@ class ReaderState extends ChangeNotifier {
   void setScale(newScale) async {
     scale = newScale;
     saveScale();
+    notifyListeners();
+    print(scale);
+  }
+
+  void zoomOut() async {
+    final newScale = scale - 0.25;
+    if (newScale >= scaleLowerBound) {
+      setScale(newScale);
+    }
+  }
+
+  void zoomIn() async {
+    final newScale = scale + 0.25;
+    if (newScale <= scaleUpperBound) {
+      setScale(newScale);
+    }
   }
 
   ReaderState() {
@@ -188,24 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: selectedIndex,
-          onDestinationSelected: (value) {
-            setState(() {
-              selectedIndex = value;
-            });
-          },
-          destinations: const <Widget>[
-            NavigationDestination(
-              icon: Icon(Icons.book),
-              label: 'Reader',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.history),
-              label: 'History',
-            ),
-          ],
-        ),
+        bottomNavigationBar: AppBottomAppBar(),
         body: Row(
           children: [
             Expanded(
@@ -234,3 +234,69 @@ class AppBarExample extends StatelessWidget {
     );
   }
 }
+
+class AppBottomAppBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReaderState>(
+      builder: (context, state, child) {
+        return BottomAppBar(
+            child: Row(children: <Widget>[
+          IconButton(
+            tooltip: 'Zoom In',
+            icon: const Icon(Icons.zoom_in),
+            onPressed: () {
+              state.zoomIn();
+            },
+          ),
+          IconButton(
+            tooltip: 'Zoom Out',
+            icon: const Icon(Icons.zoom_out),
+            onPressed: () {
+              state.zoomOut();
+            },
+          ),
+          SizedBox(width: 20),
+          IconButton(
+            tooltip: 'History',
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return HistoryPage(
+                  goToReaderPage: () {
+                    Navigator.pop(context);
+                  },
+                );
+              }));
+            },
+          ),
+        ]));
+      },
+    );
+  }
+}
+/*
+class BottomNavigationBar extends StatelessWidget {
+@override
+Widget build(BuildContext context){
+return NavigationBar(
+          selectedIndex: selectedIndex,
+          onDestinationSelected: (value) {
+            setState(() {
+              selectedIndex = value;
+            });
+          },
+          destinations: const <Widget>[
+            NavigationDestination(
+              icon: Icon(Icons.book),
+              label: 'Reader',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.history),
+              label: 'History',
+            ),
+          ],
+        )
+}
+}
+*/
