@@ -35,6 +35,28 @@ class ReaderState extends ChangeNotifier {
   var scale = defaultScale;
   List<HistoryItem> history = [];
 
+  bool isLastChapter() {
+    return chapter == chapters[bookIndex];
+  }
+
+  bool isFirstChapter() {
+    return chapter == 1;
+  }
+
+  void goToNextChapter() {
+    if (!isLastChapter()) {
+      chapter += 1;
+      setBookIndexChapter(bookIndex, chapter);
+    }
+  }
+
+  void goToPreviousChapter() {
+    if (!isFirstChapter()) {
+      chapter -= 1;
+      setBookIndexChapter(bookIndex, chapter);
+    }
+  }
+
   void setBookIndexChapter(newBookIndex, newChapter) {
     setBookIndexChapterNoHistory(newBookIndex, newChapter);
     saveToHistory(HistoryItem(bookIndex: newBookIndex, chapter: newChapter));
@@ -162,6 +184,8 @@ class _MyAppState extends State<MyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      darkTheme: ThemeData(brightness: Brightness.dark),
+      themeMode: ThemeMode.system,
       home: MyHomePage(title: "hello"),
     );
   }
@@ -241,36 +265,66 @@ class AppBottomAppBar extends StatelessWidget {
     return Consumer<ReaderState>(
       builder: (context, state, child) {
         return BottomAppBar(
-            child: Row(children: <Widget>[
-          IconButton(
-            tooltip: 'Zoom In',
-            icon: const Icon(Icons.zoom_in),
-            onPressed: () {
-              state.zoomIn();
-            },
-          ),
-          IconButton(
-            tooltip: 'Zoom Out',
-            icon: const Icon(Icons.zoom_out),
-            onPressed: () {
-              state.zoomOut();
-            },
-          ),
-          SizedBox(width: 20),
-          IconButton(
-            tooltip: 'History',
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return HistoryPage(
-                  goToReaderPage: () {
-                    Navigator.pop(context);
-                  },
-                );
-              }));
-            },
-          ),
-        ]));
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'Zoom In',
+                    icon: const Icon(Icons.zoom_in),
+                    onPressed: () {
+                      state.zoomIn();
+                    },
+                  ),
+                  IconButton(
+                    tooltip: 'Zoom Out',
+                    icon: const Icon(Icons.zoom_out),
+                    onPressed: () {
+                      state.zoomOut();
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    tooltip: 'History',
+                    icon: const Icon(Icons.history),
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return HistoryPage(
+                          goToReaderPage: () {
+                            Navigator.pop(context);
+                          },
+                        );
+                      }));
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  IconButton(
+                      tooltip: 'Previous Chapter',
+                      onPressed: !state.isFirstChapter()
+                          ? () {
+                              state.goToPreviousChapter();
+                            }
+                          : null,
+                      icon: const Icon(Icons.arrow_back)),
+                  IconButton(
+                      tooltip: 'Next Chapter',
+                      onPressed: !state.isLastChapter()
+                          ? () {
+                              state.goToNextChapter();
+                            }
+                          : null,
+                      icon: const Icon(Icons.arrow_forward)),
+                ],
+              ),
+            ]));
       },
     );
   }
