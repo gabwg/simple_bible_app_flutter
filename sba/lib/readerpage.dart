@@ -141,7 +141,12 @@ class ReaderPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: ReaderSelectorButtons(),
-          actions: <Widget>[ReaderVersionButton()],
+          actions: <Widget>[
+            ReaderVersionButton(),
+            Flexible(
+              child: SizedBox(width: 10.0),
+            )
+          ],
         ),
         body: Padding(padding: EdgeInsets.all(10.0), child: ReaderHTML()));
   }
