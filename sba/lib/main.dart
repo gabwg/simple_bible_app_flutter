@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sba/constants.dart';
+import 'package:sba/helpers.dart';
 import 'package:sba/historypage.dart';
 import 'package:sba/loaddata/load_data.dart';
 import 'package:sba/readerpage.dart';
@@ -33,6 +34,7 @@ class ReaderState extends ChangeNotifier {
   var version = defaultVersion;
   var htmlstring = "";
   var scale = defaultScale;
+  var currentHistoryIndex = 0;
   List<HistoryItem> history = [];
 
   bool isLastChapter() {
@@ -57,9 +59,11 @@ class ReaderState extends ChangeNotifier {
     }
   }
 
-  void setBookIndexChapter(newBookIndex, newChapter) {
+  void setBookIndexChapter(newBookIndex, newChapter) async {
     setBookIndexChapterNoHistory(newBookIndex, newChapter);
-    saveToHistory(HistoryItem(bookIndex: newBookIndex, chapter: newChapter));
+    await saveToHistory(
+        HistoryItem(bookIndex: newBookIndex, chapter: newChapter));
+    setHistoryIndex(0);
   }
 
   void setBookIndexChapterNoHistory(newBookIndex, newChapter) {
@@ -104,6 +108,15 @@ class ReaderState extends ChangeNotifier {
       history = history.sublist(0, historyMaxLength);
     }
     prefs.setStringList(historyKey, history.map((i) => i.toString()).toList());
+    notifyListeners();
+  }
+
+  Future<void> clearHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    history = [];
+    setHistoryIndex(0);
+    prefs.setStringList(historyKey, history.map((i) => i.toString()).toList());
+    notifyListeners();
   }
 
   Future<void> loadFromHistory() async {
@@ -118,6 +131,7 @@ class ReaderState extends ChangeNotifier {
   Future<void> loadVersion() async {
     final prefs = await SharedPreferences.getInstance();
     version = prefs.getString(versionKey) ?? defaultVersion;
+    notifyListeners();
   }
 
   Future<void> saveVersion() async {
@@ -138,6 +152,7 @@ class ReaderState extends ChangeNotifier {
   Future<void> loadScale() async {
     final prefs = await SharedPreferences.getInstance();
     scale = prefs.getDouble(scaleKey) ?? defaultScale;
+    notifyListeners();
   }
 
   Future<void> saveScale() async {
@@ -166,11 +181,72 @@ class ReaderState extends ChangeNotifier {
     }
   }
 
+  HistoryItem? getHistoryItem(index) {
+    if (index > history.length - 1) {
+      return null;
+    }
+    return history[index];
+  }
+
+  bool isFirstInHistory() {
+    return currentHistoryIndex == 0;
+  }
+
+  bool isLastInHistory() {
+    return currentHistoryIndex == history.length - 1;
+  }
+
+  bool canGoToNextHistory() {
+    return !isLastInHistory() && history.isNotEmpty;
+  }
+
+  bool canGoToPreviousHistory() {
+    return !isFirstInHistory() && history.isNotEmpty;
+  }
+
+  void goToNextHistory() {
+    if (canGoToNextHistory()) {
+      final newHistoryIndex = currentHistoryIndex + 1;
+      HistoryItem? currentHistoryItem = getHistoryItem(newHistoryIndex);
+      if (currentHistoryItem != null) {
+        setHistoryIndex(newHistoryIndex);
+        setBookIndexChapterNoHistory(
+            currentHistoryItem.bookIndex, currentHistoryItem.chapter);
+      }
+    }
+  }
+
+  void goToPreviousHistory() {
+    if (canGoToPreviousHistory()) {
+      final newHistoryIndex = currentHistoryIndex - 1;
+      HistoryItem? currentHistoryItem = getHistoryItem(newHistoryIndex);
+      if (currentHistoryItem != null) {
+        setHistoryIndex(newHistoryIndex);
+        setBookIndexChapterNoHistory(
+            currentHistoryItem.bookIndex, currentHistoryItem.chapter);
+      }
+    }
+  }
+
+  void setHistoryIndex(index) async {
+    final prefs = await SharedPreferences.getInstance();
+    currentHistoryIndex = index;
+    await prefs.setInt(historyIndexKey, index);
+    notifyListeners();
+  }
+
+  void loadHistoryIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    currentHistoryIndex = prefs.getInt(historyIndexKey) ?? 0;
+    notifyListeners();
+  }
+
   ReaderState() {
     _loadBookIndexChapter();
     loadFromHistory().then((_) => notifyListeners());
     loadVersion();
     loadScale();
+    loadHistoryIndex();
   }
 }
 
@@ -200,16 +276,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   var selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     Widget page;
@@ -271,23 +338,31 @@ class AppBottomAppBar extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    tooltip: 'Zoom In',
-                    icon: const Icon(Icons.zoom_in),
-                    onPressed: () {
-                      state.zoomIn();
-                    },
-                  ),
-                  IconButton(
                     tooltip: 'Zoom Out',
                     icon: const Icon(Icons.zoom_out),
                     onPressed: () {
                       state.zoomOut();
                     },
                   ),
+                  IconButton(
+                    tooltip: 'Zoom In',
+                    icon: const Icon(Icons.zoom_in),
+                    onPressed: () {
+                      state.zoomIn();
+                    },
+                  ),
                 ],
               ),
               Row(
                 children: [
+                  IconButton(
+                      tooltip: 'Go Back',
+                      onPressed: state.canGoToNextHistory()
+                          ? () {
+                              state.goToNextHistory();
+                            }
+                          : null,
+                      icon: const Icon(Icons.undo)),
                   IconButton(
                     tooltip: 'History',
                     icon: const Icon(Icons.history),
@@ -302,26 +377,14 @@ class AppBottomAppBar extends StatelessWidget {
                       }));
                     },
                   ),
-                ],
-              ),
-              Row(
-                children: [
                   IconButton(
-                      tooltip: 'Previous Chapter',
-                      onPressed: !state.isFirstChapter()
+                      tooltip: 'Go forward',
+                      onPressed: state.canGoToPreviousHistory()
                           ? () {
-                              state.goToPreviousChapter();
+                              state.goToPreviousHistory();
                             }
                           : null,
-                      icon: const Icon(Icons.arrow_back)),
-                  IconButton(
-                      tooltip: 'Next Chapter',
-                      onPressed: !state.isLastChapter()
-                          ? () {
-                              state.goToNextChapter();
-                            }
-                          : null,
-                      icon: const Icon(Icons.arrow_forward)),
+                      icon: const Icon(Icons.redo)),
                 ],
               ),
             ]));

@@ -7,6 +7,7 @@ const chapterKey = 'chapter';
 const versionKey = 'version';
 const historyKey = 'history';
 const scaleKey = 'scale';
+const historyIndexKey = 'historyIndex';
 
 const defaultBookIndex = 0;
 const defaultChapter = 1;
