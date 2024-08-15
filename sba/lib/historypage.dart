@@ -13,14 +13,21 @@ class HistoryPage extends StatelessWidget {
       return Scaffold(
           appBar: AppBar(
             title: Text("History"),
-            actions: [TextButton(child: Text("Clear"), onPressed: () {})],
+            actions: [
+              TextButton(
+                  child: Text("Clear"),
+                  onPressed: () {
+                    state.clearHistory();
+                  })
+            ],
           ),
           body: Padding(
               padding: EdgeInsets.all(10.0),
               child: HistoryList(
                 list: state.history,
-                onTap: (p1, p2) {
+                onTap: (p1, p2, p3) {
                   state.setBookIndexChapterNoHistory(p1, p2);
+                  state.setHistoryIndex(p3);
                   goToReaderPage();
                 },
               )));
@@ -31,17 +38,17 @@ class HistoryPage extends StatelessWidget {
 class HistoryList extends StatelessWidget {
   const HistoryList({super.key, required this.list, required this.onTap});
   final List<HistoryItem> list;
-  final void Function(int, int) onTap;
+  final void Function(int, int, int) onTap;
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return ListView(children: [
-          for (var item in list)
+          for (var (i, item) in list.indexed)
             ListTile(
                 title: Text("${booknameEn(item.bookIndex)} ${item.chapter}"),
                 onTap: () {
-                  onTap(item.bookIndex, item.chapter);
+                  onTap(item.bookIndex, item.chapter, i);
                 })
         ]);
       },

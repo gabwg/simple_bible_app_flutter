@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:provider/provider.dart';
 import 'package:sba/constants.dart';
 import 'package:sba/main.dart';
@@ -142,7 +141,7 @@ class ReaderPage extends StatelessWidget {
         appBar: AppBar(
           title: ReaderSelectorButtons(),
           actions: <Widget>[
-            ReaderVersionButton(),
+            Flexible(child: ReaderVersionButton()),
             Flexible(
               child: SizedBox(width: 10.0),
             )
@@ -260,7 +259,28 @@ class ReaderSelectorButtons extends StatelessWidget {
               style: ButtonStyle(),
               child: Text(
                 "${state.chapter}",
-              ))
+              )),
+          Flexible(child: SizedBox(width: 10.0)),
+          Row(
+            children: [
+              IconButton(
+                  tooltip: 'Previous Chapter',
+                  onPressed: !state.isFirstChapter()
+                      ? () {
+                          state.goToPreviousChapter();
+                        }
+                      : null,
+                  icon: const Icon(Icons.arrow_back)),
+              IconButton(
+                  tooltip: 'Next Chapter',
+                  onPressed: !state.isLastChapter()
+                      ? () {
+                          state.goToNextChapter();
+                        }
+                      : null,
+                  icon: const Icon(Icons.arrow_forward)),
+            ],
+          ),
         ]);
       },
     );
