@@ -138,17 +138,22 @@ class ReaderPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     return Scaffold(
-        appBar: AppBar(
-          title: ReaderSelectorButtons(),
-          actions: <Widget>[
-            Flexible(child: ReaderVersionButton()),
-            Flexible(
-              child: SizedBox(width: 10.0),
-            )
-          ],
-        ),
-        body: Padding(padding: EdgeInsets.all(10.0), child: ReaderHTML()));
+        appBar: ReaderAppBar(),
+        body: Padding(padding: EdgeInsets.all(12.0), child: ReaderHTML()));
   }
+}
+
+class ReaderAppBar extends StatelessWidget implements PreferredSizeWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: ReaderSelectorButtons(),
+      actions: [IconButton(onPressed: null, icon: Icon(Icons.search))],
+    );
+  }
+
+  @override
+  Size get preferredSize => readerAppBarPreferredSize;
 }
 
 class ReaderVersionButton extends StatelessWidget {
@@ -158,6 +163,7 @@ class ReaderVersionButton extends StatelessWidget {
       return ElevatedButton(
         child: Text(
           state.version.toUpperCase(),
+          overflow: TextOverflow.ellipsis,
         ),
         onPressed: () {
           Navigator.push(
@@ -220,11 +226,14 @@ class ReaderSelectorButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Consumer<ReaderState>(
-      builder: (consumer, state, child) {
-        final bookname = booknamesEn[state.bookIndex];
-        return Row(children: [
+    return Consumer<ReaderState>(builder: (consumer, state, child) {
+      final bookname = booknamesEn[state.bookIndex];
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Flexible(
+            flex: 5,
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -241,48 +250,32 @@ class ReaderSelectorButtons extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10.0),
-          ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (context) => ChapterSelector(
-                        bookIndex: state.bookIndex,
-                        bookName: bookname,
-                        updateFunc: (x) {
-                          state.setBookIndexChapter(state.bookIndex, x);
-                        },
-                      ),
-                    ));
-              },
-              style: ButtonStyle(),
-              child: Text(
-                "${state.chapter}",
-              )),
-          Flexible(child: SizedBox(width: 10.0)),
-          Row(
-            children: [
-              IconButton(
-                  tooltip: 'Previous Chapter',
-                  onPressed: !state.isFirstChapter()
-                      ? () {
-                          state.goToPreviousChapter();
-                        }
-                      : null,
-                  icon: const Icon(Icons.arrow_back)),
-              IconButton(
-                  tooltip: 'Next Chapter',
-                  onPressed: !state.isLastChapter()
-                      ? () {
-                          state.goToNextChapter();
-                        }
-                      : null,
-                  icon: const Icon(Icons.arrow_forward)),
-            ],
+          Flexible(flex: 5, child: SizedBox(width: 3)),
+          Flexible(
+            child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (context) => ChapterSelector(
+                          bookIndex: state.bookIndex,
+                          bookName: bookname,
+                          updateFunc: (x) {
+                            state.setBookIndexChapter(state.bookIndex, x);
+                          },
+                        ),
+                      ));
+                },
+                style: ButtonStyle(),
+                child: Text(
+                  "${state.chapter}",
+                  overflow: TextOverflow.fade,
+                )),
           ),
-        ]);
-      },
-    );
+          Flexible(child: SizedBox(width: 3)),
+          Flexible(flex: 1, child: ReaderVersionButton())
+        ],
+      );
+    });
   }
 }
