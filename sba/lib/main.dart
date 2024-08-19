@@ -314,18 +314,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class AppBarExample extends StatelessWidget {
-  const AppBarExample({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return PreferredSize(
-      preferredSize: Size.fromHeight(20.0),
-      child: Placeholder(),
-    );
-  }
-}
-
 class AppBottomAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {

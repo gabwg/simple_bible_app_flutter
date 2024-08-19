@@ -38,6 +38,8 @@ const defaultReaderHtmlFontSizes = {
   'sub_font-size': 0.75
 };
 
+const readerAppBarPreferredSize = const Size.fromHeight(56.0);
+
 final booknamesEn = [
   'Genesis',
   'Exodus',
